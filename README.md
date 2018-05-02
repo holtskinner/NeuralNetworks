@@ -19,8 +19,7 @@ All computation was performed on a Google Cloud Compute Instance running Ubuntu 
 
 For the first attempt at image classification, I used the Keras Library on top of Tensor Flow to create a basic image classifier. This Convolutional Nueral Net contained 5 Layers: Convolution (with 32 filters 3*3 each), Max Pooling, Flattening, Fully Connected and Output (Also Fully Connected)
 
-Training this classifier took quite a while even on a high-equipment machine. The classifier was trained for 25 epochs on the dataset. Each Epoch took approximately 27 minutes to complete. I first had an issue of my laptop going into sleep mode and killing the process when the ssh connection went down. To avoid this, I found and utilized the Unix command `nohup` which prevents the program from quitting when the shell is exited.
-
+Training this classifier took quite a while even on a high-equipment machine. The classifier was to be trained for 25 epochs on the dataset. Each Epoch took approximately 27 minutes to complete. I first had an issue of my laptop going into sleep mode and killing the process when the ssh connection went down. To avoid this, I found and utilized the Unix command `nohup` which prevents the program from quitting when the shell is exited. I then had an issue of accidentally killing the process myself when working on another experiment, so I reran the homemade algorithm with half the dataset and 5 epochs to get a proof of concept.
 
 ### Resnet50
 

@@ -62,8 +62,8 @@ def train_classifier(classifier):
                                                 class_mode='binary')
 
     classifier.fit_generator(training_set,
-                             steps_per_epoch=8000,
-                             epochs=25,
+                             steps_per_epoch=4000,
+                             epochs=5,
                              validation_data=test_set,
                              validation_steps=2000)
 
