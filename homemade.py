@@ -1,5 +1,5 @@
 # Initialize Neural Network as Sequential
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 # Perform Convolution Step on Training Images
 # Use Max in Pooling Operation
 # Flatten Arrays into a linear vector
@@ -11,6 +11,12 @@ from keras.preprocessing.image import ImageDataGenerator
 
 import numpy as np
 from keras.preprocessing import image
+import sys
+import re
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import os
 
 
 def create_model():
@@ -55,19 +61,18 @@ def train_classifier(classifier):
                                                      batch_size=32,
                                                      class_mode='binary')
 
-    training_set.class_indices
     test_set = test_datagen.flow_from_directory('test_set',
                                                 target_size=(64, 64),
                                                 batch_size=32,
                                                 class_mode='binary')
 
-    classifier.fit_generator(training_set,
-                             steps_per_epoch=4000,
-                             epochs=5,
-                             validation_data=test_set,
-                             validation_steps=2000)
+    history = classifier.fit_generator(training_set,
+                                       steps_per_epoch=8000,
+                                       epochs=25,
+                                       validation_data=test_set,
+                                       validation_steps=2000)
 
-    return classifier
+    return classifier, history
 
 
 def predict(classifier, image_path):
@@ -87,18 +92,70 @@ def predict(classifier, image_path):
     return prediction
 
 
+def graph_model():
+    lines = tuple(open("nohup.out", "r"))
+
+    loss = np.zeros(len(lines))
+    acc = np.zeros(len(lines))
+
+    for i, c in enumerate(lines):
+        digs = np.array(re.findall("\d+\.\d+", c))
+        if len(digs) >= 2:
+            loss[i] = digs[0]
+            acc[i] = digs[1]
+
+    acc = acc[5:20005]
+    loss = loss[5:20005]
+
+    for i in range(len(acc)):
+        if acc[i] == 0:
+            acc[i] = acc[i - 1]
+        if loss[i] == 0 or loss[i] >= .9:
+            loss[i] = loss[i - 1]
+
+    plt.plot(acc, "b--", loss, "g--")
+    plt.grid(True)
+    plt.savefig("clusters.jpg")
+
+    acc = np.reshape(acc, (5, 4000))
+    loss = np.reshape(loss, (5, 4000))
+
+    print(acc)
+    print(loss)
+
+
 def main():
+
+    # img_path = sys.argv[1]
+    # classifier = load_model("model.h5")
+
     classifier = create_model()
-    classifier = train_classifier(classifier)
+    classifier, history_callback = train_classifier(classifier)
 
     classifier.save("model.h5")
-    prediction = predict(classifier, "./Cat.jpg")
 
-    print(prediction)
-    f = open('prediction.txt', 'w')
+    loss_history = history_callback.history["loss"]
+    np_loss_history = np.array(loss_history)
+    np.savetxt("loss_history.txt", loss_history, delimiter=",")
 
-    f.write(prediction)
-    f.close()
+    acc_history = history_callback.history["acc"]
+    np_acc_history = np.array(acc_history)
+    np.savetxt("acc_history.txt", acc_history, delimiter=",")
+
+    # correct = 0
+    # count = 0
+    # for f in os.listdir(img_path):
+    #     prediction = predict(classifier, os.path.join(img_path, f))
+    #     if prediction == "cat":
+    #         correct += 1
+    #     count += 1
+
+    # print(correct / count)
+    # f = open('prediction.txt', 'w')
+
+    # f.write(prediction)
+    # f.close()
 
 
 main()
+# graph_model()
