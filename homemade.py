@@ -99,7 +99,7 @@ def graph_model():
     acc = np.zeros(len(lines))
 
     for i, c in enumerate(lines):
-        digs = np.array(re.findall("\d+\.\d+", c))
+        digs = np.array(re.findall(r"\d+\.\d+", c))
         if len(digs) >= 2:
             loss[i] = digs[0]
             acc[i] = digs[1]
