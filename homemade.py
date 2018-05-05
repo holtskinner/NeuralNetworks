@@ -56,6 +56,7 @@ def train_classifier(classifier):
 
     test_datagen = ImageDataGenerator(rescale=1. / 255)
 
+    # Pull all images from training_set directory
     training_set = train_datagen.flow_from_directory('training_set',
                                                      target_size=(64, 64),
                                                      batch_size=32,
@@ -66,6 +67,7 @@ def train_classifier(classifier):
                                                 batch_size=32,
                                                 class_mode='binary')
 
+    # Actual Training step
     history = classifier.fit_generator(training_set,
                                        steps_per_epoch=8000,
                                        epochs=25,
@@ -116,42 +118,27 @@ def graph_model():
     plt.plot(acc, "b--", loss, "g--")
     plt.grid(True)
     plt.legend(["Accuracy", "Loss"])
-    plt.savefig("clusters.jpg")
+    plt.savefig("training_acc.jpg")
 
 
 def main():
 
     img_path = sys.argv[1]
-    classifier = load_model("model.h5")
+    # classifier = load_model("model.h5")
 
-    # classifier = create_model()
-    # classifier, history_callback = train_classifier(classifier)
+    classifier = create_model()
+    classifier, history_callback = train_classifier(classifier)
 
-    # classifier.save("model.h5")
+    classifier.save("model.h5")
 
-    # loss_history = history_callback.history["loss"]
-    # np_loss_history = np.array(loss_history)
-    # np.savetxt("loss_history.txt", loss_history, delimiter=",")
+    loss_history = history_callback.history["loss"]
+    np.savetxt("loss_history.txt", np.array(loss_history), delimiter=",")
 
-    # acc_history = history_callback.history["acc"]
-    # np_acc_history = np.array(acc_history)
-    # np.savetxt("acc_history.txt", acc_history, delimiter=",")
+    acc_history = history_callback.history["acc"]
+    np.savetxt("acc_history.txt", np.array(acc_history), delimiter=",")
 
-    correct = 0
-    count = 0
-    for f in os.listdir(img_path):
-        prediction = predict(classifier, os.path.join(img_path, f))
-        print(f"{f}: {prediction}")
-        if prediction == "cat":
-            correct += 1
-        count += 1
-
-    print(correct / count)
-    # f = open('prediction.txt', 'w')
-
-    # f.write(prediction)
-    # f.close()
+    prediction = predict(classifier, img_path)
 
 
-# main()
+main()
 graph_model()
