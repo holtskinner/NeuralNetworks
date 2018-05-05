@@ -26,20 +26,20 @@ def main():
     correct = 0
     count = 0
 
-    # for index, f in enumerate(os.listdir(img_path)):
-    #     if index >= 10:
-    #         break
-    #     predictions = predict(model, os.path.join(img_path, f))
-    #     count += 1
-    #     for p in predictions:
-    #         if "cat" in p[1]:
-    #             correct += 1
-    #             break
+    for index, f in enumerate(os.listdir(img_path)):
+        if index >= 100:
+            break
+        predictions = predict(model, os.path.join(img_path, f))
+        count += 1
+        for p in predictions:
+            if "cat" in p[1] or p[1] == "tabby" or p[1] == "lynx":
+                correct += 1
+                break
 
-    predictions = predict(model, img_path)
+    # predictions = predict(model, img_path)
 
-    print(predictions)
-    # print(correct / count)
+    # print(predictions)
+    print(correct / count)
 
 
 main()
