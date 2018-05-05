@@ -32,7 +32,10 @@ Below are the graphs depicting the loss (green) and the accuracy (blue) when tra
 
 ![](./training_acc_&_loss.jpg)
 
-As great as these results seemed, it was not meant to be. When I attempted to run my own cat images through the network, it would very rarely classify them correctly. Upon further investigation, the way I attempted to limit the training data size in Keras actually only trained the network on dog images. I had to completely start over and retrain the network on the full set of images. The process went overnight and took more than 12 hours to fully train.
+As great as these results seemed, it was not meant to be. When I attempted to run my own cat images through the network, it would very rarely classify them correctly. Upon further investigation, the way I attempted to limit the training data size in Keras actually only trained the network on dog images. I had to completely start over and retrain the network on the full set of images. The process went overnight and took more than 12 hours to fully train. Below is the training graph with the entire dataset and all 25 epochs. This new network got 99% Testing accuracy according to Keras's output; however, when testing on random images outside the test/training sets, results were mixed. The system had particular trouble identifying cats rather than dogs.
+
+![](./training_acc_25.jpg)
+
 
 ### Resnet50
 
