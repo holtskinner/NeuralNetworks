@@ -2,6 +2,19 @@ from keras.applications.resnet50 import ResNet50, preprocess_input, decode_predi
 from keras.preprocessing import image
 import numpy as np
 import sys
+import os
+
+
+def predict(classifier, image_path):
+
+    test_image = image.load_img(image_path, target_size=(224, 224))
+
+    test_image = image.img_to_array(test_image)
+    test_image = np.expand_dims(test_image, axis=0)
+
+    result = decode_predictions(classifier.predict(test_image), top=3)[0]
+
+    return result
 
 
 def main():
@@ -10,15 +23,23 @@ def main():
 
     model = ResNet50()
 
-    img = image.load_img(img_path, target_size=(224, 224))
+    correct = 0
+    count = 0
 
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
+    # for index, f in enumerate(os.listdir(img_path)):
+    #     if index >= 10:
+    #         break
+    #     predictions = predict(model, os.path.join(img_path, f))
+    #     count += 1
+    #     for p in predictions:
+    #         if "cat" in p[1]:
+    #             correct += 1
+    #             break
 
-    preds = decode_predictions(model.predict(x), top=3)[0]
+    predictions = predict(model, img_path)
 
-    print(preds)
+    print(predictions)
+    # print(correct / count)
 
 
 main()

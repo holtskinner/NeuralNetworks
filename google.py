@@ -27,7 +27,7 @@ def main():
             {
                 "image": {
                     "source": {
-                        "imageUri": IMAGE_URL
+                        "imageUri": e
                     }
                 },
                 "features": [
@@ -50,4 +50,4 @@ def main():
         print(f"{descr}: {score}")
 
 
-main()
+# main()

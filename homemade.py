@@ -100,62 +100,58 @@ def graph_model():
 
     for i, c in enumerate(lines):
         digs = np.array(re.findall(r"\d+\.\d+", c))
-        if len(digs) >= 2:
+        if len(digs) == 2:
             loss[i] = digs[0]
             acc[i] = digs[1]
 
-    acc = acc[5:20005]
-    loss = loss[5:20005]
+    acc = acc[5:]
+    loss = loss[5:]
 
     for i in range(len(acc)):
-        if acc[i] == 0:
+        if acc[i] == 0 or loss[i] >= .999:
+            print(i)
             acc[i] = acc[i - 1]
-        if loss[i] == 0 or loss[i] >= .9:
             loss[i] = loss[i - 1]
 
     plt.plot(acc, "b--", loss, "g--")
     plt.grid(True)
+    plt.legend(["Accuracy", "Loss"])
     plt.savefig("clusters.jpg")
-
-    acc = np.reshape(acc, (5, 4000))
-    loss = np.reshape(loss, (5, 4000))
-
-    print(acc)
-    print(loss)
 
 
 def main():
 
-    # img_path = sys.argv[1]
-    # classifier = load_model("model.h5")
+    img_path = sys.argv[1]
+    classifier = load_model("model.h5")
 
-    classifier = create_model()
-    classifier, history_callback = train_classifier(classifier)
+    # classifier = create_model()
+    # classifier, history_callback = train_classifier(classifier)
 
-    classifier.save("model.h5")
+    # classifier.save("model.h5")
 
-    loss_history = history_callback.history["loss"]
-    np_loss_history = np.array(loss_history)
-    np.savetxt("loss_history.txt", loss_history, delimiter=",")
+    # loss_history = history_callback.history["loss"]
+    # np_loss_history = np.array(loss_history)
+    # np.savetxt("loss_history.txt", loss_history, delimiter=",")
 
-    acc_history = history_callback.history["acc"]
-    np_acc_history = np.array(acc_history)
-    np.savetxt("acc_history.txt", acc_history, delimiter=",")
+    # acc_history = history_callback.history["acc"]
+    # np_acc_history = np.array(acc_history)
+    # np.savetxt("acc_history.txt", acc_history, delimiter=",")
 
-    # correct = 0
-    # count = 0
-    # for f in os.listdir(img_path):
-    #     prediction = predict(classifier, os.path.join(img_path, f))
-    #     if prediction == "cat":
-    #         correct += 1
-    #     count += 1
+    correct = 0
+    count = 0
+    for f in os.listdir(img_path):
+        prediction = predict(classifier, os.path.join(img_path, f))
+        print(f"{f}: {prediction}")
+        if prediction == "cat":
+            correct += 1
+        count += 1
 
-    # print(correct / count)
+    print(correct / count)
     # f = open('prediction.txt', 'w')
 
     # f.write(prediction)
     # f.close()
 
 
-main()
-# graph_model()
+# main()
+graph_model()
