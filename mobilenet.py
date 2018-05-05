@@ -12,9 +12,9 @@ def predict(classifier, image_path):
     test_image = image.img_to_array(test_image)
     test_image = np.expand_dims(test_image, axis=0)
     test_image = preprocess_input(test_image)
-    result = decode_predictions(classifier.predict(test_image), top=3)[0]
+    result = decode_predictions(classifier.predict(test_image), top=1)[0]
 
-    return result
+    return result[0]
 
 
 def main():
@@ -29,18 +29,14 @@ def main():
     for index, f in enumerate(os.listdir(img_path)):
         if index >= 100:
             break
-        predictions = predict(model, os.path.join(img_path, f))
 
-        p = predictions[0]
+        p = predict(model, os.path.join(img_path, f))
+
         count += 1
 
         if "cat" in p[1] or p[1] == "tabby" or p[1] == "lynx":
             correct += 1
-        print(p[1])
 
-    # predictions = predict(model, img_path)
-
-    # print(predictions)
     print(correct / count)
 
 
