@@ -47,7 +47,7 @@ Diagram of ResNet50
 
 Source: Deep Residual Learning for Image Recognition, Kaiming He et al
 
-For the experiments of classifying dogs and cats, I used a pre-trained network on the ImageNet dataset. The advantage of using a pre-trained model is the amount of time saved from not having to train. Especially since the deep nets (including ResNet50) can take days or weeks to fully train. However, this dataset provided an interesting challenge in testing because all of the classes in ImageNet are highly specific. For example, there is no "dog" class, but rather "Siberian Husky." To make a more apples to apples comparison, each prediction had to be analyzed for the different types of classes that could be categorized as a dog or a cat. With this further analysis, the accuracy in the Dog/Cat dataset achieved an accuracy of 80% for both cats and dogs. An Unexpected issue occurred because Resnet50 in Keras expects images of 224 * 224 pixels, and the Python Error messages weren't entirely clear.
+For the experiments of classifying dogs and cats, I used a pre-trained network on the ImageNet dataset. The advantage of using a pre-trained model is the amount of time saved from not having to train. Especially since the deep nets (including ResNet50) can take days or weeks to fully train. However, this dataset provided an interesting challenge in testing because all of the classes in ImageNet are highly specific. For example, there is no "dog" class, but rather "Siberian Husky." To make a more apples to apples comparison, each prediction had to be analyzed for the different types of classes that could be categorized as a dog or a cat. With this further analysis, the accuracy in the Dog/Cat dataset achieved an accuracy of 80% for both cats and dogs. An Unexpected issue occurred because Resnet50 in Keras expects images of 224 * 224 pixels, and the Python Error messages weren't entirely clear. This was resolved by reducing all of the images to the proper dimensions before running them through the network. Transfer Learning was also attempted for this model by creating a custom fully connected layer and to reduce the number of classes. The training time would have been over a day per epoch without further hardware, so this experiment did not run to completion.
 
 ### MobileNet
 MobileNet is a Neural Network model that was designed specifically to be small, low-latency, and low power for use on mobile devices while still being close to accurate as larger networks. The MobileNet first appeared in a paper in April 2017 by a group of researchers at Google. [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861) The interesting differences between this network and standard CNNs are in the convolution steps. MobileNet does one standard convolution as the first layer, but then it does a "depthwise separable" convolution for every other convolution. The first step involves performing convolution in each channel (RGB) separately, rather than all at once.
@@ -258,6 +258,95 @@ def main():
 
 main()
 
+```
+
+`resnet50_with_transfer.py`
+
+```python
+from keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
+from keras.models import Sequential, load_model, Model
+from keras.preprocessing import image
+from keras.layers import Dense, GlobalAveragePooling2D
+import numpy as np
+import sys
+from keras.preprocessing.image import ImageDataGenerator
+
+
+def train_classifier(classifier):
+
+    # Creates extra training data by flipping, rotating images
+    train_datagen = ImageDataGenerator(rescale=1. / 255,
+                                       shear_range=0.2,
+                                       zoom_range=0.2,
+                                       horizontal_flip=True)
+
+    test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+    # Pull all images from training_set directory
+    training_set = train_datagen.flow_from_directory('training_set',
+                                                     target_size=(224, 224),
+                                                     batch_size=32,
+                                                     class_mode='binary')
+
+    test_set = test_datagen.flow_from_directory('test_set',
+                                                target_size=(224, 224),
+                                                batch_size=32,
+                                                class_mode='binary')
+
+    # Actual Training step
+    history = classifier.fit_generator(training_set,
+                                       steps_per_epoch=8000,
+                                       epochs=25,
+                                       validation_data=test_set,
+                                       validation_steps=2000)
+
+    return classifier, history
+
+
+def add_new_last_layer(base_model, nb_classes):
+    """Add last layer to the convnet
+    Args:
+      base_model: keras model excluding top
+      nb_classes: # of classes
+    Returns:
+      new keras model with last layer
+    """
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    predictions = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=base_model.input, outputs=predictions)
+    return model
+
+
+def setup_to_transfer_learn(model, base_model):
+    """Freeze all layers and compile the model"""
+    for layer in base_model.layers:
+        layer.trainable = False
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy', metrics=['accuracy'])
+
+
+def main():
+
+    img_path = sys.argv[1]
+
+    base_model = ResNet50(include_top=False, weights="imagenet")
+    model = add_new_last_layer(base_model, 2)
+    setup_to_transfer_learn(model, base_model)
+
+    model, history = train_classifier(model)
+
+    model.save("resnet.h5")
+
+    test_image = image.load_img(img_path, target_size=(224, 224))
+
+    test_image = image.img_to_array(test_image)
+    test_image = np.expand_dims(test_image, axis=0)
+    test_image = preprocess_input(test_image)
+    result = decode_predictions(model.predict(test_image), top=3)[0]
+
+
+main()
 ```
 
 `mobilenet.py`
