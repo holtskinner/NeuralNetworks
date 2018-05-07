@@ -1,5 +1,6 @@
 # A Comparison of CNNs for Image Classification
 **Holt Skinner**
+
 *University of Missouri – Computer Science 8780*
 
 ### Introduction
